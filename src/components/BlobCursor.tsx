@@ -2,7 +2,6 @@
 "use client";
 
 import { useRef, useEffect, useCallback } from "react";
-import gsap from "gsap";
 
 interface BlobCursorProps {
   blobType?: "circle" | "square";
@@ -58,44 +57,23 @@ export default function BlobCursor({
     return { left: rect.left, top: rect.top };
   }, []);
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
       const { left, top } = updateOffset();
-      const x = e.clientX;
-      const y = e.clientY;
+      const x = "clientX" in e ? e.clientX : e.touches[0].clientX;
+      const y = "clientY" in e ? e.clientY : e.touches[0].clientY;
 
       blobsRef.current.forEach((el, i) => {
         if (!el) return;
         const isLead = i === 0;
-        gsap.to(el, {
-          x: x - left,
-          y: y - top,
-          duration: isLead ? fastDuration : slowDuration,
-          ease: isLead ? fastEase : slowEase,
-        });
+        const duration = isLead ? fastDuration : slowDuration;
+        
+        // Use CSS transitions instead of GSAP
+        el.style.transition = `transform ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+        el.style.transform = `translate(${x - left}px, ${y - top}px) translate(-50%, -50%)`;
       });
     },
-    [updateOffset, fastDuration, slowDuration, fastEase, slowEase]
-  );
-
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent<HTMLDivElement>) => {
-      const { left, top } = updateOffset();
-      const x = e.touches[0].clientX;
-      const y = e.touches[0].clientY;
-
-      blobsRef.current.forEach((el, i) => {
-        if (!el) return;
-        const isLead = i === 0;
-        gsap.to(el, {
-          x: x - left,
-          y: y - top,
-          duration: isLead ? fastDuration : slowDuration,
-          ease: isLead ? fastEase : slowEase,
-        });
-      });
-    },
-    [updateOffset, fastDuration, slowDuration, fastEase, slowEase]
+    [updateOffset, fastDuration, slowDuration]
   );
 
   useEffect(() => {
@@ -107,8 +85,8 @@ export default function BlobCursor({
   return (
     <div
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onTouchMove={handleTouchMove}
+      onMouseMove={handleMove}
+      onTouchMove={handleMove}
       className="fixed top-0 left-0 w-full h-full pointer-events-none"
       style={{ zIndex }}
     >
@@ -133,7 +111,7 @@ export default function BlobCursor({
           <div
             key={i}
             ref={(el) => (blobsRef.current[i] = el)}
-            className="absolute will-change-transform transform -translate-x-1/2 -translate-y-1/2"
+            className="absolute will-change-transform"
             style={{
               width: sizes[i],
               height: sizes[i],
@@ -141,6 +119,7 @@ export default function BlobCursor({
               backgroundColor: fillColor,
               opacity: opacities[i],
               boxShadow: `${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px 0 ${shadowColor}`,
+              transform: "translate(-50%, -50%)",
             }}
           >
             <div
