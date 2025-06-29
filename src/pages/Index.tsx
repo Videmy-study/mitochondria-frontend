@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import VideoFeed from '../components/VideoFeed';
@@ -53,7 +52,7 @@ const Index = () => {
       duration: 25,
       isLiked: false
     }
-  ];
+  ]);
 
   const [currentUser] = useState({
     id: '1',
