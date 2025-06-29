@@ -35,11 +35,11 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-md mx-auto space-y-6">
       {/* Search and Filter Bar */}
       <div className="sticky top-20 z-40 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-md p-4 rounded-lg border border-gray-200 dark:border-gray-800">
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col gap-4">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search videos or creators..."
@@ -49,7 +49,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-2">
             {sortOptions.map((option) => {
               const Icon = option.icon;
               return (
@@ -58,7 +58,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
                   variant={sortBy === option.value ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSortBy(option.value)}
-                  className="gap-2"
+                  className="gap-2 whitespace-nowrap"
                 >
                   <Icon className="w-4 h-4" />
                   {option.label}
@@ -69,13 +69,13 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
         </div>
       </div>
 
-      {/* Social Media Style Feed */}
+      {/* Social Media Style Feed optimized for 9:16 videos */}
       {filteredVideos.length > 0 ? (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {filteredVideos.map((video, index) => (
             <div 
               key={video.id} 
-              className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in"
+              className="animate-fade-in"
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <VideoCard
