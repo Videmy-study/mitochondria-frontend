@@ -58,11 +58,31 @@ export default function BlobCursor({
     return { left: rect.left, top: rect.top };
   }, []);
 
-  const handleMove = useCallback(
-    (e: MouseEvent | TouchEvent) => {
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
       const { left, top } = updateOffset();
-      const x = "clientX" in e ? e.clientX : e.touches[0].clientX;
-      const y = "clientY" in e ? e.clientY : e.touches[0].clientY;
+      const x = e.clientX;
+      const y = e.clientY;
+
+      blobsRef.current.forEach((el, i) => {
+        if (!el) return;
+        const isLead = i === 0;
+        gsap.to(el, {
+          x: x - left,
+          y: y - top,
+          duration: isLead ? fastDuration : slowDuration,
+          ease: isLead ? fastEase : slowEase,
+        });
+      });
+    },
+    [updateOffset, fastDuration, slowDuration, fastEase, slowEase]
+  );
+
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent<HTMLDivElement>) => {
+      const { left, top } = updateOffset();
+      const x = e.touches[0].clientX;
+      const y = e.touches[0].clientY;
 
       blobsRef.current.forEach((el, i) => {
         if (!el) return;
@@ -87,8 +107,8 @@ export default function BlobCursor({
   return (
     <div
       ref={containerRef}
-      onMouseMove={handleMove}
-      onTouchMove={handleMove}
+      onMouseMove={handleMouseMove}
+      onTouchMove={handleTouchMove}
       className="fixed top-0 left-0 w-full h-full pointer-events-none"
       style={{ zIndex }}
     >
