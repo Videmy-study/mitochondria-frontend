@@ -3,17 +3,18 @@ import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import VideoFeed from '../components/VideoFeed';
 import PromptForm from '../components/PromptForm';
+import ChatInterface from '../components/ChatInterface';
 import UserProfile from '../components/UserProfile';
 import LoginDialog from '../components/LoginDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth0Custom } from '@/hooks/useAuth0Custom';
-import { Sparkles, Play } from 'lucide-react';
+import { Sparkles, Play, MessageCircle } from 'lucide-react';
 import FloatingStars from '../components/FloatingStars';
 import FallingText from '../components/FallingText';
 import DecryptedText from '../components/DecryptedText';
 import GlowButton from '../components/GlowButton';
-import ChatInterface from '../components/ChatInterface';
+import { videoService, TransformedVideo } from '../services/videoService';
 
 interface IndexProps {
   demoUser?: { name: string; email: string; picture?: string } | null;
@@ -22,6 +23,7 @@ interface IndexProps {
 const Index: React.FC<IndexProps> = ({ demoUser }) => {
   const [currentView, setCurrentView] = useState<'feed' | 'create' | 'profile'>('feed');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showChatDialog, setShowChatDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -33,7 +35,7 @@ const Index: React.FC<IndexProps> = ({ demoUser }) => {
   const feedLayout = isExplorePage ? 'grid' : 'carousel';
 
   // Mock data
-  const [videos, setVideos] = useState([
+  const [videos, setVideos] = useState<any[]>([
     {
       id: '1',
       videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
@@ -71,6 +73,22 @@ const Index: React.FC<IndexProps> = ({ demoUser }) => {
       isLiked: false
     }
   ]);
+
+  // Fetch real videos from API and merge with mock videos
+  useEffect(() => {
+    let isMounted = true;
+    videoService.loadAllVideos().then((apiVideos) => {
+      if (isMounted && apiVideos.length > 0) {
+        setVideos((prev) => {
+          // Avoid duplicates by id
+          const existingIds = new Set(prev.map(v => v.id));
+          const newVideos = apiVideos.filter(v => !existingIds.has(v.id));
+          return [...newVideos, ...prev];
+        });
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // Create authenticated user object from Auth0 user or demo user
   const currentUser = (isAuthenticated && user) ? {
@@ -200,32 +218,109 @@ const Index: React.FC<IndexProps> = ({ demoUser }) => {
       
       <Header 
         user={currentUser}
-        onCreateVideo={undefined}
+        onCreateVideo={() => {
+          if (!isUserAuthenticated) {
+            setShowLoginDialog(true);
+          } else {
+            setShowCreateDialog(true);
+          }
+        }}
+        onChat={() => setShowChatDialog(true)}
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
 
-      <main className="flex flex-col items-center justify-center min-h-[80vh] py-8 px-2">
-        <ChatInterface />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-20">
+        {currentView === 'feed' && (
+          <div className="space-y-8">
+            {/* Hero Section - Only show on home page */}
+            {window.location.pathname === '/' && (
+              <div className="text-center space-y-4 py-12">
+                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent glow-text">
+                  <DecryptedText text="Create Amazing Videos" delay={100} />
+                </h1>
+                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto glow-text">
+                  <DecryptedText text="Transform your ideas into stunning AI-generated videos in seconds" delay={1000} />
+                </p>
+                <div className="flex justify-center gap-4 pt-4">
+                  <GlowButton
+                    onClick={() => {
+                      if (!isUserAuthenticated) {
+                        setShowLoginDialog(true);
+                      } else {
+                        setShowCreateDialog(true);
+                      }
+                    }}
+                    glowColor="purple"
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    <DecryptedText text="Start Creating" delay={1500} />
+                  </GlowButton>
+                  
+                  <GlowButton
+                    onClick={() => setShowChatDialog(true)}
+                    glowColor="blue"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    <DecryptedText text="Chat with AI" delay={1700} />
+                  </GlowButton>
+                </div>
+              </div>
+            )}
+
+            <VideoFeed
+              videos={videos}
+              onVideoAction={handleVideoAction}
+              onLoadMore={() => toast({ title: 'No more videos to load' })}
+              hasMore={false}
+              isLoading={false}
+            />
+          </div>
+        )}
+
+        {currentView === 'profile' && currentUser && (
+          <UserProfile
+            user={currentUser}
+            videos={videos.filter(v => v.creator.username === currentUser.username)}
+            prompts={['A golden retriever in a meadow', 'Abstract shapes in neon colors']}
+            onFollow={() => {}}
+            onEditProfile={() => toast({ title: 'Edit profile coming soon!' })}
+            onVideoAction={handleVideoAction}
+          />
+        )}
       </main>
+
+      {/* Chat Dialog */}
+      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
+        <DialogContent className="max-w-4xl h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              Chat with AI Research Assistant
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <ChatInterface onClose={() => setShowChatDialog(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Video Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create AI Video</DialogTitle>
+          </DialogHeader>
+          <PromptForm onSubmit={handleCreateVideo} isLoading={isGenerating} />
+        </DialogContent>
+      </Dialog>
 
       {/* Login Dialog */}
       <LoginDialog 
         open={showLoginDialog} 
-        onOpenChange={setShowLoginDialog} 
+        onOpenChange={setShowLoginDialog}
       />
-
-      {/* Create Video Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-3xl w-[95vw] max-h-[85vh] overflow-y-auto bg-background border-border p-0 gap-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Create AI Video</DialogTitle>
-          </DialogHeader>
-          <div className="p-6">
-            <PromptForm onSubmit={handleCreateVideo} isLoading={isGenerating} />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

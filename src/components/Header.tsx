@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Sparkles, User, Settings, LogOut, Plus, Home, Search, TrendingUp, Moon, Sun } from 'lucide-react';
+import { Sparkles, User, Settings, LogOut, Plus, Home, Search, TrendingUp, Moon, Sun, MessageCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
@@ -13,11 +12,12 @@ interface HeaderProps {
     displayName: string;
   };
   onCreateVideo: () => void;
+  onChat?: () => void;
   onLogin: () => void;
   onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onLogin, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onChat, onLogin, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -81,6 +81,17 @@ const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onLogin, onLogout 
             >
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
+
+            {onChat && (
+              <Button
+                onClick={onChat}
+                variant="outline"
+                className="gap-2 border-purple-200 text-purple-700 hover:bg-purple-50 dark:border-purple-800 dark:text-purple-300 dark:hover:bg-purple-900/20"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Chat</span>
+              </Button>
+            )}
 
             <Button
               onClick={onCreateVideo}

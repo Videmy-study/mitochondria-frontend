@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Send, Bot, User, Loader2, MessageCircle } from 'lucide-react';
+import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatMessage {
@@ -65,9 +64,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: inputMessage,
-          user_id: 'frontend_user',
-          session_id: sessionId
+          message: inputMessage
         }),
       });
 
@@ -153,110 +150,96 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onClose }) => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto shadow-xl border-0 bg-card text-card-foreground h-[600px] flex flex-col">
-      <CardHeader className="text-center space-y-2 pb-4 border-b">
-        <div className="flex items-center justify-center gap-2">
-          <MessageCircle className="w-8 h-8 text-purple-600" />
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            Chat with AI
-          </CardTitle>
-        </div>
-        <p className="text-muted-foreground">
-          Ask me about academic research, FOMC analysis, political news, or anything else!
-        </p>
-      </CardHeader>
-
-      <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages Area */}
-        <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
-                    message.sender === 'user'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    {message.sender === 'bot' && (
-                      <Bot className="w-5 h-5 text-purple-600 mt-1 flex-shrink-0" />
-                    )}
-                    {message.sender === 'user' && (
-                      <User className="w-5 h-5 text-white mt-1 flex-shrink-0" />
-                    )}
-                    <div className="flex-1">
-                      <div className="text-sm font-medium mb-1">
-                        {message.sender === 'user' ? 'You' : getAgentDisplayName(message.agentUsed)}
-                      </div>
-                      <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </div>
-                      {message.routingReason && message.agentUsed && message.agentUsed !== 'routing_agent' && (
-                        <div className="mt-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {message.routingReason}
-                          </Badge>
-                        </div>
-                      )}
-                      <div className="text-xs opacity-70 mt-2">
-                        {formatTime(message.timestamp)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-w-[80%]">
-                  <div className="flex items-center gap-3">
-                    <Bot className="w-5 h-5 text-purple-600" />
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">AI is thinking...</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-
-        {/* Input Area */}
-        <div className="border-t p-4 bg-background">
-          <div className="flex gap-2">
-            <Input
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type your message here..."
-              className="flex-1"
-              disabled={isLoading}
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={!inputMessage.trim() || isLoading}
-              className="bg-purple-600 hover:bg-purple-700"
+    <div className="flex flex-col h-full bg-background">
+      {/* Messages Area */}
+      <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+        <div className="space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2 text-center">
-            Press Enter to send, Shift+Enter for new line
-          </p>
+              <div
+                className={`max-w-[80%] rounded-lg p-4 ${
+                  message.sender === 'user'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  {message.sender === 'bot' && (
+                    <Bot className="w-5 h-5 text-purple-600 mt-1 flex-shrink-0" />
+                  )}
+                  {message.sender === 'user' && (
+                    <User className="w-5 h-5 text-white mt-1 flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <div className="text-sm font-medium mb-1">
+                      {message.sender === 'user' ? 'You' : getAgentDisplayName(message.agentUsed)}
+                    </div>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {message.content}
+                    </div>
+                    {message.routingReason && message.agentUsed && message.agentUsed !== 'routing_agent' && (
+                      <div className="mt-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {message.routingReason}
+                        </Badge>
+                      </div>
+                    )}
+                    <div className="text-xs opacity-70 mt-2">
+                      {formatTime(message.timestamp)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {isLoading && (
+            <div className="flex justify-start">
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 max-w-[80%]">
+                <div className="flex items-center gap-3">
+                  <Bot className="w-5 h-5 text-purple-600" />
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm">AI is thinking...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      </ScrollArea>
+
+      {/* Input Area */}
+      <div className="border-t p-4 bg-background">
+        <div className="flex gap-2">
+          <Input
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type your message here..."
+            className="flex-1"
+            disabled={isLoading}
+          />
+          <Button
+            onClick={sendMessage}
+            disabled={!inputMessage.trim() || isLoading}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Press Enter to send, Shift+Enter for new line
+        </p>
+      </div>
+    </div>
   );
 };
 
