@@ -12,6 +12,7 @@ import FloatingStars from '../components/FloatingStars';
 import FallingText from '../components/FallingText';
 import DecryptedText from '../components/DecryptedText';
 import GlowButton from '../components/GlowButton';
+import ChatInterface from '../components/ChatInterface';
 
 interface IndexProps {
   demoUser?: { name: string; email: string; picture?: string } | null;
@@ -193,68 +194,13 @@ const Index: React.FC<IndexProps> = ({ demoUser }) => {
       
       <Header 
         user={currentUser}
-        onCreateVideo={() => {
-          if (!isUserAuthenticated) {
-            setShowLoginDialog(true);
-          } else {
-            setShowCreateDialog(true);
-          }
-        }}
+        onCreateVideo={undefined}
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-20">
-        {currentView === 'feed' && (
-          <div className="space-y-8">
-            {/* Hero Section - Only show on home page */}
-            {window.location.pathname === '/' && (
-              <div className="text-center space-y-4 py-12">
-                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent glow-text">
-                  <DecryptedText text="Create Amazing Videos" delay={100} />
-                </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto glow-text">
-                  <DecryptedText text="Transform your ideas into stunning AI-generated videos in seconds" delay={1000} />
-                </p>
-                <div className="flex justify-center gap-4 pt-4">
-                  <GlowButton
-                    onClick={() => {
-                      if (!isUserAuthenticated) {
-                        setShowLoginDialog(true);
-                      } else {
-                        setShowCreateDialog(true);
-                      }
-                    }}
-                    glowColor="purple"
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 flex items-center gap-2"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    <DecryptedText text="Start Creating" delay={1500} />
-                  </GlowButton>
-                </div>
-              </div>
-            )}
-
-            <VideoFeed
-              videos={videos}
-              onVideoAction={handleVideoAction}
-              onLoadMore={() => toast({ title: 'No more videos to load' })}
-              hasMore={false}
-              isLoading={false}
-            />
-          </div>
-        )}
-
-        {currentView === 'profile' && currentUser && (
-          <UserProfile
-            user={currentUser}
-            videos={videos.filter(v => v.creator.username === currentUser.username)}
-            prompts={['A golden retriever in a meadow', 'Abstract shapes in neon colors']}
-            onFollow={() => {}}
-            onEditProfile={() => toast({ title: 'Edit profile coming soon!' })}
-            onVideoAction={handleVideoAction}
-          />
-        )}
+      <main className="flex flex-col items-center justify-center min-h-[80vh] py-8 px-2">
+        <ChatInterface />
       </main>
 
       {/* Login Dialog */}
