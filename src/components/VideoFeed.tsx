@@ -35,56 +35,63 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Search and Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search videos or creators..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 border-2 focus:border-purple-500"
-          />
-        </div>
+      <div className="sticky top-20 z-40 bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-md p-4 rounded-lg border border-gray-200 dark:border-gray-800">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search videos or creators..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 border-2 focus:border-purple-500 bg-white dark:bg-gray-800"
+            />
+          </div>
 
-        <div className="flex gap-2">
-          {sortOptions.map((option) => {
-            const Icon = option.icon;
-            return (
-              <Button
-                key={option.value}
-                variant={sortBy === option.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSortBy(option.value)}
-                className="gap-2"
-              >
-                <Icon className="w-4 h-4" />
-                {option.label}
-              </Button>
-            );
-          })}
+          <div className="flex gap-2">
+            {sortOptions.map((option) => {
+              const Icon = option.icon;
+              return (
+                <Button
+                  key={option.value}
+                  variant={sortBy === option.value ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortBy(option.value)}
+                  className="gap-2"
+                >
+                  <Icon className="w-4 h-4" />
+                  {option.label}
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Video Grid */}
+      {/* Social Media Style Feed */}
       {filteredVideos.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVideos.map((video) => (
-            <VideoCard
-              key={video.id}
-              video={video}
-              onLike={(id) => onVideoAction('like', id)}
-              onShare={(id) => onVideoAction('share', id)}
-              onDownload={(id) => onVideoAction('download', id)}
-            />
+        <div className="space-y-6">
+          {filteredVideos.map((video, index) => (
+            <div 
+              key={video.id} 
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <VideoCard
+                video={video}
+                onLike={(id) => onVideoAction('like', id)}
+                onShare={(id) => onVideoAction('share', id)}
+                onDownload={(id) => onVideoAction('download', id)}
+              />
+            </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
+        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">No videos found</h3>
-          <p className="text-gray-500">Try adjusting your search or filters</p>
+          <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No videos found</h3>
+          <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
         </div>
       )}
 
@@ -96,7 +103,7 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
             variant="outline"
             size="lg"
             disabled={isLoading}
-            className="min-w-[200px]"
+            className="min-w-[200px] bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">

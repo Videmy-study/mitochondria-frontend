@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Sparkles, User, Settings, LogOut, Plus, Home, Search, TrendingUp } from 'lucide-react';
+import { Sparkles, User, Settings, LogOut, Plus, Home, Search, TrendingUp, Moon, Sun } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
@@ -20,6 +20,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onLogin, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigationItems = [
     { path: '/', label: 'Home', icon: Home },
@@ -27,8 +28,13 @@ const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onLogin, onLogout 
     { path: '/trending', label: 'Trending', icon: TrendingUp }
   ];
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -68,6 +74,15 @@ const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onLogin, onLogout 
           {/* Actions */}
           <div className="flex items-center gap-3">
             <Button
+              onClick={toggleDarkMode}
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </Button>
+
+            <Button
               onClick={onCreateVideo}
               className="gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
             >
@@ -85,10 +100,10 @@ const Header: React.FC<HeaderProps> = ({ user, onCreateVideo, onLogin, onLogout 
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuContent className="w-56 bg-white dark:bg-gray-800 z-50" align="end" forceMount>
                   <div className="flex items-center justify-start gap-2 p-2">
                     <div className="flex flex-col space-y-1 leading-none">
-                      <p className="font-medium">{user.displayName}</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{user.displayName}</p>
                       <p className="text-xs text-muted-foreground">@{user.username}</p>
                     </div>
                   </div>

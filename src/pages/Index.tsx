@@ -53,7 +53,7 @@ const Index = () => {
       duration: 25,
       isLiked: false
     }
-  ]);
+  ];
 
   const [currentUser] = useState({
     id: '1',
@@ -126,7 +126,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Header 
         user={currentUser}
         onCreateVideo={() => setShowCreateDialog(true)}
@@ -137,24 +137,26 @@ const Index = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {currentView === 'feed' && (
           <div className="space-y-8">
-            {/* Hero Section */}
-            <div className="text-center space-y-4 py-12">
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Create Amazing Videos
-              </h1>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Transform your ideas into stunning AI-generated videos in seconds
-              </p>
-              <div className="flex justify-center gap-4 pt-4">
-                <button
-                  onClick={() => setShowCreateDialog(true)}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  Start Creating
-                </button>
+            {/* Hero Section - Only show on home page */}
+            {window.location.pathname === '/' && (
+              <div className="text-center space-y-4 py-12">
+                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  Create Amazing Videos
+                </h1>
+                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                  Transform your ideas into stunning AI-generated videos in seconds
+                </p>
+                <div className="flex justify-center gap-4 pt-4">
+                  <button
+                    onClick={() => setShowCreateDialog(true)}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    Start Creating
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             <VideoFeed
               videos={videos}
@@ -180,7 +182,7 @@ const Index = () => {
 
       {/* Create Video Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle className="sr-only">Create AI Video</DialogTitle>
           </DialogHeader>
