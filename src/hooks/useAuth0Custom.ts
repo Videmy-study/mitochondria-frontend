@@ -13,19 +13,25 @@ export const useAuth0Custom = () => {
 
   const loginWithGoogle = () => {
     loginWithRedirect({
-      connection: 'google-oauth2',
+      authorizationParams: {
+        connection: 'google-oauth2',
+      }
     });
   };
 
   const loginWithGithub = () => {
     loginWithRedirect({
-      connection: 'github',
+      authorizationParams: {
+        connection: 'github',
+      }
     });
   };
 
   const loginWithEmail = () => {
     loginWithRedirect({
-      connection: 'Username-Password-Authentication',
+      authorizationParams: {
+        connection: 'Username-Password-Authentication',
+      }
     });
   };
 
