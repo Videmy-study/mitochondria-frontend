@@ -54,7 +54,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
   ];
 
   return (
-    <Card className="w-full max-w-2xl mx-auto shadow-xl border-0 bg-gradient-to-br from-white to-gray-50">
+    <Card className="w-full max-w-2xl mx-auto shadow-xl border-0 bg-card text-card-foreground">
       <CardHeader className="text-center space-y-2 pb-6">
         <div className="flex items-center justify-center gap-2">
           <Sparkles className="w-8 h-8 text-purple-600" />
@@ -62,14 +62,14 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
             Create AI Video
           </CardTitle>
         </div>
-        <p className="text-gray-600">Transform your ideas into stunning videos with AI</p>
+        <p className="text-muted-foreground max-w-2xl mx-auto">Transform your ideas into stunning videos with AI</p>
       </CardHeader>
 
       <CardContent className="space-y-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Prompt Input */}
           <div className="space-y-2">
-            <Label htmlFor="prompt" className="text-base font-semibold flex items-center gap-2">
+            <Label htmlFor="prompt" className="text-base font-semibold flex items-center gap-2 text-foreground">
               <Video className="w-4 h-4" />
               Video Description
             </Label>
@@ -78,27 +78,27 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
               placeholder="Describe your video idea in detail... (e.g., 'A golden retriever playing in a sunny meadow with butterflies floating around')"
               value={formData.prompt}
               onChange={(e) => setFormData(prev => ({ ...prev, prompt: e.target.value }))}
-              className="min-h-[120px] resize-none border-2 focus:border-purple-500 transition-colors"
+              className="min-h-[120px] resize-none border-2 focus:border-purple-500 transition-colors bg-background text-foreground"
               required
             />
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               {formData.prompt.length}/500 characters
             </p>
           </div>
 
           {/* Video Style */}
           <div className="space-y-2">
-            <Label className="text-base font-semibold">Video Style</Label>
+            <Label className="text-base font-semibold text-foreground">Video Style</Label>
             <Select value={formData.style} onValueChange={(value) => setFormData(prev => ({ ...prev, style: value }))}>
-              <SelectTrigger className="border-2 focus:border-purple-500">
+              <SelectTrigger className="border-2 focus:border-purple-500 bg-background text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border-border">
                 {videoStyles.map((style) => (
-                  <SelectItem key={style.value} value={style.value}>
+                  <SelectItem key={style.value} value={style.value} className="text-popover-foreground">
                     <div>
                       <div className="font-medium">{style.label}</div>
-                      <div className="text-sm text-gray-500">{style.description}</div>
+                      <div className="text-sm text-muted-foreground">{style.description}</div>
                     </div>
                   </SelectItem>
                 ))}
@@ -108,7 +108,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
 
           {/* Duration Slider */}
           <div className="space-y-3">
-            <Label className="text-base font-semibold flex items-center gap-2">
+            <Label className="text-base font-semibold flex items-center gap-2 text-foreground">
               <Clock className="w-4 h-4" />
               Duration: {formData.duration} seconds
             </Label>
@@ -120,7 +120,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
               step={5}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-gray-500">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>10s</span>
               <span>60s</span>
             </div>
@@ -128,20 +128,20 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
 
           {/* Background Music */}
           <div className="space-y-2">
-            <Label className="text-base font-semibold flex items-center gap-2">
+            <Label className="text-base font-semibold flex items-center gap-2 text-foreground">
               <Music className="w-4 h-4" />
               Background Music
             </Label>
             <Select value={formData.music} onValueChange={(value) => setFormData(prev => ({ ...prev, music: value }))}>
-              <SelectTrigger className="border-2 focus:border-purple-500">
+              <SelectTrigger className="border-2 focus:border-purple-500 bg-background text-foreground">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-popover border-border">
                 {musicOptions.map((music) => (
-                  <SelectItem key={music.value} value={music.value}>
+                  <SelectItem key={music.value} value={music.value} className="text-popover-foreground">
                     <div>
                       <div className="font-medium">{music.label}</div>
-                      <div className="text-sm text-gray-500">{music.description}</div>
+                      <div className="text-sm text-muted-foreground">{music.description}</div>
                     </div>
                   </SelectItem>
                 ))}
@@ -152,7 +152,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSubmit, isLoading = false }) 
           {/* Submit Button */}
           <Button
             type="submit"
-            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl text-white"
             disabled={!formData.prompt.trim() || isLoading}
           >
             {isLoading ? (

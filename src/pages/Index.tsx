@@ -194,11 +194,13 @@ const Index = () => {
 
       {/* Create Video Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-800 glow-card">
-          <DialogHeader>
-            <DialogTitle className="sr-only">Create AI Video</DialogTitle>
+        <DialogContent className="max-w-3xl w-[95vw] max-h-[85vh] overflow-y-auto bg-background border-border p-0 gap-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Create AI Video</DialogTitle>
           </DialogHeader>
-          <PromptForm onSubmit={handleCreateVideo} isLoading={isGenerating} />
+          <div className="p-6">
+            <PromptForm onSubmit={handleCreateVideo} isLoading={isGenerating} />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
