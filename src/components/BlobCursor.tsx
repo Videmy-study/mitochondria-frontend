@@ -18,11 +18,11 @@ const BlobCursor = () => {
 
   return (
     <div
-      className="fixed pointer-events-none z-50 w-10 h-10 rounded-full opacity-60 transition-all duration-200 ease-out"
+      className="fixed pointer-events-none z-50 w-10 h-10 rounded-full opacity-100 transition-all duration-200 ease-out"
       style={{
         left: position.x - 20,
         top: position.y - 20,
-        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.8) 0%, rgba(59, 130, 246, 0.6) 70%, transparent 100%)',
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 1) 0%, rgba(59, 130, 246, 0.8) 70%, transparent 100%)',
         filter: 'blur(1px)',
         transform: 'scale(1)',
       }}
