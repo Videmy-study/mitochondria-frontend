@@ -13,9 +13,13 @@ import FloatingStars from '../components/FloatingStars';
 import FallingText from '../components/FallingText';
 import DecryptedText from '../components/DecryptedText';
 import GlowButton from '../components/GlowButton';
+import ChatInterface from '../components/ChatInterface';
 
-const Index = () => {
-  const location = useLocation();
+interface IndexProps {
+  demoUser?: { name: string; email: string; picture?: string } | null;
+}
+
+const Index: React.FC<IndexProps> = ({ demoUser }) => {
   const [currentView, setCurrentView] = useState<'feed' | 'create' | 'profile'>('feed');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -68,8 +72,8 @@ const Index = () => {
     }
   ]);
 
-  // Create authenticated user object from Auth0 user
-  const currentUser = isAuthenticated && user ? {
+  // Create authenticated user object from Auth0 user or demo user
+  const currentUser = (isAuthenticated && user) ? {
     id: user.sub || '1',
     username: user.nickname || user.email?.split('@')[0] || 'user',
     displayName: user.name || 'User',
@@ -80,7 +84,21 @@ const Index = () => {
     totalLikes: 1234,
     videosCount: 12,
     isOwnProfile: true
+  } : demoUser ? {
+    id: 'demo-1',
+    username: demoUser.name.toLowerCase().replace(/\s+/g, '_'),
+    displayName: demoUser.name,
+    avatar: demoUser.picture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+    bio: 'AI video creator passionate about bringing stories to life',
+    followers: 245,
+    following: 189,
+    totalLikes: 1234,
+    videosCount: 12,
+    isOwnProfile: true
   } : null;
+
+  // Check if user is authenticated (either Auth0 or demo)
+  const isUserAuthenticated = isAuthenticated || !!demoUser;
 
   const fallingWords = [
     'AI', 'CREATE', 'GENERATE', 'STUNNING', 'VIDEOS', 'MAGIC', 'FUTURE',
@@ -116,7 +134,7 @@ const Index = () => {
   };
 
   const handleCreateVideo = async (formData: any) => {
-    if (!isAuthenticated) {
+    if (!isUserAuthenticated) {
       setShowLoginDialog(true);
       return;
     }
@@ -154,11 +172,17 @@ const Index = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    if (demoUser) {
+      // For demo mode, we need to handle logout differently
+      window.location.reload(); // Simple reload for demo mode
+    } else {
+      logout();
+    }
     toast({ title: 'Logged out successfully' });
   };
 
-  if (isLoading) {
+  // Don't show loading if we have a demo user
+  if (isLoading && !demoUser) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -176,81 +200,13 @@ const Index = () => {
       
       <Header 
         user={currentUser}
-        onCreateVideo={() => {
-          if (!isAuthenticated) {
-            setShowLoginDialog(true);
-          } else {
-            setShowCreateDialog(true);
-          }
-        }}
+        onCreateVideo={undefined}
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-20">
-        {currentView === 'feed' && (
-          <div className="space-y-8">
-            {/* Hero Section - Only show on home page */}
-            {isHomePage && (
-              <div className="text-center space-y-4 py-12">
-                <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent glow-text">
-                  <DecryptedText text="Create Amazing Videos" delay={100} />
-                </h1>
-                <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto glow-text">
-                  <DecryptedText text="Transform your ideas into stunning AI-generated videos in seconds" delay={1000} />
-                </p>
-                <div className="flex justify-center gap-4 pt-4">
-                  <GlowButton
-                    onClick={() => {
-                      if (!isAuthenticated) {
-                        setShowLoginDialog(true);
-                      } else {
-                        setShowCreateDialog(true);
-                      }
-                    }}
-                    glowColor="purple"
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 flex items-center gap-2"
-                  >
-                    <Sparkles className="w-5 h-5" />
-                    <DecryptedText text="Start Creating" delay={1500} />
-                  </GlowButton>
-                </div>
-              </div>
-            )}
-
-            {/* Explore Page Title */}
-            {isExplorePage && (
-              <div className="text-center space-y-4 py-8">
-                <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent glow-text">
-                  <DecryptedText text="Explore Videos" delay={100} />
-                </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto glow-text">
-                  <DecryptedText text="Discover amazing AI-generated content from creators around the world" delay={500} />
-                </p>
-              </div>
-            )}
-
-            <VideoFeed
-              videos={videos}
-              onVideoAction={handleVideoAction}
-              onLoadMore={() => toast({ title: 'No more videos to load' })}
-              hasMore={false}
-              isLoading={false}
-              layout={feedLayout}
-            />
-          </div>
-        )}
-
-        {currentView === 'profile' && currentUser && (
-          <UserProfile
-            user={currentUser}
-            videos={videos.filter(v => v.creator.username === currentUser.username)}
-            prompts={['A golden retriever in a meadow', 'Abstract shapes in neon colors']}
-            onFollow={() => {}}
-            onEditProfile={() => toast({ title: 'Edit profile coming soon!' })}
-            onVideoAction={handleVideoAction}
-          />
-        )}
+      <main className="flex flex-col items-center justify-center min-h-[80vh] py-8 px-2">
+        <ChatInterface />
       </main>
 
       {/* Login Dialog */}

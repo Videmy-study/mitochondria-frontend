@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,54 +8,78 @@ import { auth0Config } from './config/auth0';
 import BlobCursor from './components/BlobCursor';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { DemoAuth } from "./components/DemoAuth";
+import { useState } from "react";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <Auth0Provider
-    domain={auth0Config.domain}
-    clientId={auth0Config.clientId}
-    authorizationParams={{
-      redirect_uri: auth0Config.redirectUri,
-      audience: auth0Config.audience,
-    }}
-  >
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BlobCursor
-          blobType="circle"
-          fillColor="#5227FF"
-          trailCount={3}
-          sizes={[60, 125, 75]}
-          innerSizes={[20, 35, 25]}
-          innerColor="rgba(255,255,255,0.8)"
-          opacities={[0.6, 0.6, 0.6]}
-          shadowColor="rgba(0,0,0,0.75)"
-          shadowBlur={5}
-          shadowOffsetX={10}
-          shadowOffsetY={10}
-          filterStdDeviation={30}
-          useFilter={true}
-          fastDuration={0.1}
-          slowDuration={0.5}
-          zIndex={100}
-        />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/profile/:username" element={<Index />} />
-            <Route path="/video/:id" element={<Index />} />
-            <Route path="/create" element={<Index />} />
-            <Route path="/explore" element={<Index />} />
-            <Route path="/trending" element={<Index />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </Auth0Provider>
-);
+// Check if Auth0 is properly configured
+const isAuth0Configured = () => {
+  return auth0Config.domain && 
+         auth0Config.domain !== 'your-auth0-domain.auth0.com' &&
+         auth0Config.clientId && 
+         auth0Config.clientId !== 'your-auth0-client-id';
+};
+
+const App = () => {
+  const [demoUser, setDemoUser] = useState<{ name: string; email: string; picture?: string } | null>(null);
+
+  // If Auth0 is not configured, use demo mode
+  if (!isAuth0Configured()) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            {demoUser ? (
+              <Routes>
+                <Route path="/" element={<Index demoUser={demoUser} />} />
+                <Route path="/profile/:username" element={<Index demoUser={demoUser} />} />
+                <Route path="/video/:id" element={<Index demoUser={demoUser} />} />
+                <Route path="/create" element={<Index demoUser={demoUser} />} />
+                <Route path="/explore" element={<Index demoUser={demoUser} />} />
+                <Route path="/trending" element={<Index demoUser={demoUser} />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            ) : (
+              <DemoAuth onLogin={setDemoUser} />
+            )}
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
+  }
+
+  // Use Auth0 if properly configured
+  return (
+    <Auth0Provider
+      domain={auth0Config.domain}
+      clientId={auth0Config.clientId}
+      authorizationParams={{
+        redirect_uri: auth0Config.redirectUri,
+        audience: auth0Config.audience,
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/profile/:username" element={<Index />} />
+              <Route path="/video/:id" element={<Index />} />
+              <Route path="/create" element={<Index />} />
+              <Route path="/explore" element={<Index />} />
+              <Route path="/trending" element={<Index />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </Auth0Provider>
+  );
+};
 
 export default App;
