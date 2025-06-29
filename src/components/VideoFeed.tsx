@@ -1,9 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import VideoCard from './VideoCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, TrendingUp, Clock, Heart } from 'lucide-react';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 interface VideoFeedProps {
   videos: any[];
@@ -22,6 +30,9 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('latest');
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
 
   const sortOptions = [
     { value: 'latest', label: 'Latest', icon: Clock },
@@ -33,6 +44,36 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
     video.prompt.toLowerCase().includes(searchQuery.toLowerCase()) ||
     video.creator.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (!api) return;
+
+    const interval = setInterval(() => {
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      } else {
+        api.scrollTo(0); // Loop back to first video
+      }
+    }, 5000); // Auto-scroll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [api]);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
+  const handleDotClick = (index: number) => {
+    api?.scrollTo(index);
+  };
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -69,23 +110,57 @@ const VideoFeed: React.FC<VideoFeedProps> = ({
         </div>
       </div>
 
-      {/* Social Media Style Feed optimized for 9:16 videos */}
+      {/* Auto-scrolling Carousel */}
       {filteredVideos.length > 0 ? (
-        <div className="space-y-8">
-          {filteredVideos.map((video, index) => (
-            <div 
-              key={video.id} 
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <VideoCard
-                video={video}
-                onLike={(id) => onVideoAction('like', id)}
-                onShare={(id) => onVideoAction('share', id)}
-                onDownload={(id) => onVideoAction('download', id)}
+        <div className="space-y-4">
+          <Carousel
+            setApi={setApi}
+            className="w-full max-w-md mx-auto"
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+          >
+            <CarouselContent>
+              {filteredVideos.map((video, index) => (
+                <CarouselItem key={video.id}>
+                  <div className="p-1">
+                    <VideoCard
+                      video={video}
+                      onLike={(id) => onVideoAction('like', id)}
+                      onShare={(id) => onVideoAction('share', id)}
+                      onDownload={(id) => onVideoAction('download', id)}
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-2" />
+            <CarouselNext className="right-2" />
+          </Carousel>
+
+          {/* Pagination Dots */}
+          <div className="flex justify-center gap-2 py-4">
+            {Array.from({ length: count }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => handleDotClick(index)}
+                className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                  index === current - 1
+                    ? 'bg-purple-600 scale-125 shadow-lg shadow-purple-500/50'
+                    : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                }`}
+                aria-label={`Go to video ${index + 1}`}
               />
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Video Counter */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Video {current} of {count}
+            </p>
+          </div>
         </div>
       ) : (
         <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
