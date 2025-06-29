@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Auth0Provider } from '@auth0/auth0-react';
 import { auth0Config } from './config/auth0';
+import BlobCursor from './components/BlobCursor';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
   >
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <BlobCursor />
         <Toaster />
         <Sonner />
         <BrowserRouter>
