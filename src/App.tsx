@@ -33,12 +33,12 @@ const App = () => {
           <BrowserRouter>
             {demoUser ? (
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/profile/:username" element={<Index />} />
-                <Route path="/video/:id" element={<Index />} />
-                <Route path="/create" element={<Index />} />
-                <Route path="/explore" element={<Index />} />
-                <Route path="/trending" element={<Index />} />
+                <Route path="/" element={<Index demoUser={demoUser} />} />
+                <Route path="/profile/:username" element={<Index demoUser={demoUser} />} />
+                <Route path="/video/:id" element={<Index demoUser={demoUser} />} />
+                <Route path="/create" element={<Index demoUser={demoUser} />} />
+                <Route path="/explore" element={<Index demoUser={demoUser} />} />
+                <Route path="/trending" element={<Index demoUser={demoUser} />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             ) : (

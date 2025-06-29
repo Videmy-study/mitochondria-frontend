@@ -13,7 +13,11 @@ import FallingText from '../components/FallingText';
 import DecryptedText from '../components/DecryptedText';
 import GlowButton from '../components/GlowButton';
 
-const Index = () => {
+interface IndexProps {
+  demoUser?: { name: string; email: string; picture?: string } | null;
+}
+
+const Index: React.FC<IndexProps> = ({ demoUser }) => {
   const [currentView, setCurrentView] = useState<'feed' | 'create' | 'profile'>('feed');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -61,8 +65,8 @@ const Index = () => {
     }
   ]);
 
-  // Create authenticated user object from Auth0 user
-  const currentUser = isAuthenticated && user ? {
+  // Create authenticated user object from Auth0 user or demo user
+  const currentUser = (isAuthenticated && user) ? {
     id: user.sub || '1',
     username: user.nickname || user.email?.split('@')[0] || 'user',
     displayName: user.name || 'User',
@@ -73,7 +77,21 @@ const Index = () => {
     totalLikes: 1234,
     videosCount: 12,
     isOwnProfile: true
+  } : demoUser ? {
+    id: 'demo-1',
+    username: demoUser.name.toLowerCase().replace(/\s+/g, '_'),
+    displayName: demoUser.name,
+    avatar: demoUser.picture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+    bio: 'AI video creator passionate about bringing stories to life',
+    followers: 245,
+    following: 189,
+    totalLikes: 1234,
+    videosCount: 12,
+    isOwnProfile: true
   } : null;
+
+  // Check if user is authenticated (either Auth0 or demo)
+  const isUserAuthenticated = isAuthenticated || !!demoUser;
 
   const fallingWords = [
     'AI', 'CREATE', 'GENERATE', 'STUNNING', 'VIDEOS', 'MAGIC', 'FUTURE',
@@ -109,7 +127,7 @@ const Index = () => {
   };
 
   const handleCreateVideo = async (formData: any) => {
-    if (!isAuthenticated) {
+    if (!isUserAuthenticated) {
       setShowLoginDialog(true);
       return;
     }
@@ -147,11 +165,17 @@ const Index = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    if (demoUser) {
+      // For demo mode, we need to handle logout differently
+      window.location.reload(); // Simple reload for demo mode
+    } else {
+      logout();
+    }
     toast({ title: 'Logged out successfully' });
   };
 
-  if (isLoading) {
+  // Don't show loading if we have a demo user
+  if (isLoading && !demoUser) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -170,7 +194,7 @@ const Index = () => {
       <Header 
         user={currentUser}
         onCreateVideo={() => {
-          if (!isAuthenticated) {
+          if (!isUserAuthenticated) {
             setShowLoginDialog(true);
           } else {
             setShowCreateDialog(true);
@@ -195,7 +219,7 @@ const Index = () => {
                 <div className="flex justify-center gap-4 pt-4">
                   <GlowButton
                     onClick={() => {
-                      if (!isAuthenticated) {
+                      if (!isUserAuthenticated) {
                         setShowLoginDialog(true);
                       } else {
                         setShowCreateDialog(true);
