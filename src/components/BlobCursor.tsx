@@ -1,14 +1,31 @@
 
-import React from 'react';
-import { Cursor } from 'react-bits';
+import React, { useEffect, useState } from 'react';
 
 const BlobCursor = () => {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({ x: e.clientX, y: e.clientY });
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
   return (
-    <Cursor
-      fillColor="rgba(139, 92, 246, 0.3)" 
-      borderColor="rgba(59, 130, 246, 0.5)"
-      size={40}
-      speed={0.8}
+    <div
+      className="fixed pointer-events-none z-50 w-10 h-10 rounded-full opacity-30 transition-all duration-200 ease-out"
+      style={{
+        left: position.x - 20,
+        top: position.y - 20,
+        background: 'radial-gradient(circle, rgba(139, 92, 246, 0.6) 0%, rgba(59, 130, 246, 0.3) 70%, transparent 100%)',
+        filter: 'blur(1px)',
+        transform: 'scale(1)',
+      }}
     />
   );
 };
