@@ -3,8 +3,10 @@ import Header from '../components/Header';
 import VideoFeed from '../components/VideoFeed';
 import PromptForm from '../components/PromptForm';
 import UserProfile from '../components/UserProfile';
+import LoginDialog from '../components/LoginDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth0Custom } from '@/hooks/useAuth0Custom';
 import { Sparkles, Play } from 'lucide-react';
 import FloatingStars from '../components/FloatingStars';
 import FallingText from '../components/FallingText';
@@ -14,9 +16,10 @@ import GlowButton from '../components/GlowButton';
 const Index = () => {
   const [currentView, setCurrentView] = useState<'feed' | 'create' | 'profile'>('feed');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [user, setUser] = useState(null);
   const { toast } = useToast();
+  const { isAuthenticated, isLoading, user, logout } = useAuth0Custom();
 
   // Mock data
   const [videos, setVideos] = useState([
@@ -58,18 +61,19 @@ const Index = () => {
     }
   ]);
 
-  const [currentUser] = useState({
-    id: '1',
-    username: 'you',
-    displayName: 'Your Name',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+  // Create authenticated user object from Auth0 user
+  const currentUser = isAuthenticated && user ? {
+    id: user.sub || '1',
+    username: user.nickname || user.email?.split('@')[0] || 'user',
+    displayName: user.name || 'User',
+    avatar: user.picture || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
     bio: 'AI video creator passionate about bringing stories to life',
     followers: 245,
     following: 189,
     totalLikes: 1234,
     videosCount: 12,
     isOwnProfile: true
-  });
+  } : null;
 
   const fallingWords = [
     'AI', 'CREATE', 'GENERATE', 'STUNNING', 'VIDEOS', 'MAGIC', 'FUTURE',
@@ -105,6 +109,11 @@ const Index = () => {
   };
 
   const handleCreateVideo = async (formData: any) => {
+    if (!isAuthenticated) {
+      setShowLoginDialog(true);
+      return;
+    }
+
     setIsGenerating(true);
     
     // Simulate video generation
@@ -114,7 +123,7 @@ const Index = () => {
         videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
         thumbnail: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=500',
         prompt: formData.prompt,
-        creator: { username: currentUser.username, avatar: currentUser.avatar },
+        creator: { username: currentUser?.username || 'user', avatar: currentUser?.avatar || '' },
         likes: 0,
         comments: 0,
         style: formData.style,
@@ -133,6 +142,26 @@ const Index = () => {
     }, 5000);
   };
 
+  const handleLogin = () => {
+    setShowLoginDialog(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    toast({ title: 'Logged out successfully' });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 relative overflow-hidden">
       <FloatingStars />
@@ -140,9 +169,15 @@ const Index = () => {
       
       <Header 
         user={currentUser}
-        onCreateVideo={() => setShowCreateDialog(true)}
-        onLogin={() => toast({ title: 'Login feature coming soon!' })}
-        onLogout={() => toast({ title: 'Logged out successfully' })}
+        onCreateVideo={() => {
+          if (!isAuthenticated) {
+            setShowLoginDialog(true);
+          } else {
+            setShowCreateDialog(true);
+          }
+        }}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-20">
@@ -159,7 +194,13 @@ const Index = () => {
                 </p>
                 <div className="flex justify-center gap-4 pt-4">
                   <GlowButton
-                    onClick={() => setShowCreateDialog(true)}
+                    onClick={() => {
+                      if (!isAuthenticated) {
+                        setShowLoginDialog(true);
+                      } else {
+                        setShowCreateDialog(true);
+                      }
+                    }}
                     glowColor="purple"
                     className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:from-purple-700 hover:to-blue-700 transition-all duration-200 hover:scale-105 flex items-center gap-2"
                   >
@@ -180,7 +221,7 @@ const Index = () => {
           </div>
         )}
 
-        {currentView === 'profile' && (
+        {currentView === 'profile' && currentUser && (
           <UserProfile
             user={currentUser}
             videos={videos.filter(v => v.creator.username === currentUser.username)}
@@ -191,6 +232,12 @@ const Index = () => {
           />
         )}
       </main>
+
+      {/* Login Dialog */}
+      <LoginDialog 
+        open={showLoginDialog} 
+        onOpenChange={setShowLoginDialog} 
+      />
 
       {/* Create Video Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
