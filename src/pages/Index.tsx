@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import VideoFeed from '../components/VideoFeed';
 import PromptForm from '../components/PromptForm';
@@ -14,12 +15,18 @@ import DecryptedText from '../components/DecryptedText';
 import GlowButton from '../components/GlowButton';
 
 const Index = () => {
+  const location = useLocation();
   const [currentView, setCurrentView] = useState<'feed' | 'create' | 'profile'>('feed');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, isLoading, user, logout } = useAuth0Custom();
+
+  // Determine layout based on route
+  const isExplorePage = location.pathname === '/explore';
+  const isHomePage = location.pathname === '/';
+  const feedLayout = isExplorePage ? 'grid' : 'carousel';
 
   // Mock data
   const [videos, setVideos] = useState([
@@ -184,7 +191,7 @@ const Index = () => {
         {currentView === 'feed' && (
           <div className="space-y-8">
             {/* Hero Section - Only show on home page */}
-            {window.location.pathname === '/' && (
+            {isHomePage && (
               <div className="text-center space-y-4 py-12">
                 <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent glow-text">
                   <DecryptedText text="Create Amazing Videos" delay={100} />
@@ -211,12 +218,25 @@ const Index = () => {
               </div>
             )}
 
+            {/* Explore Page Title */}
+            {isExplorePage && (
+              <div className="text-center space-y-4 py-8">
+                <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent glow-text">
+                  <DecryptedText text="Explore Videos" delay={100} />
+                </h1>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto glow-text">
+                  <DecryptedText text="Discover amazing AI-generated content from creators around the world" delay={500} />
+                </p>
+              </div>
+            )}
+
             <VideoFeed
               videos={videos}
               onVideoAction={handleVideoAction}
               onLoadMore={() => toast({ title: 'No more videos to load' })}
               hasMore={false}
               isLoading={false}
+              layout={feedLayout}
             />
           </div>
         )}
